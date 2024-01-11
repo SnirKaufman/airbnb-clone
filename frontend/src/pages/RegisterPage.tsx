@@ -7,12 +7,11 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function regsiterUser(e: React.FormEvent<HTMLFormElement>) {
+  async function regsiterUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    axios.get("/test");
-
-    axios.post("/register", { name, email, password });
+    await axios.post("/register", { name, email, password });
+    alert("Registration successful");
   }
 
   return (
