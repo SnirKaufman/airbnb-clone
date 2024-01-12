@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const Header = () => {
+function Header() {
   return (
     <header className=" flex justify-between">
       <a href="" className="flex items-center gap-1">
@@ -76,6 +76,6 @@ const Header = () => {
       </Link>
     </header>
   );
-};
+}
 
 export default Header;

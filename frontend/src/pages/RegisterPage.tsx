@@ -7,18 +7,22 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function regsiterUser(e: React.FormEvent<HTMLFormElement>) {
+  async function registerUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    await axios.post("/register", { name, email, password });
-    alert("Registration successful");
+    try {
+      await axios.post("/register", { name, email, password });
+      alert("Registration successful");
+    } catch (error) {
+      alert("Registration failed");
+    }
   }
 
   return (
     <div className="mt-4 grow flex items-center justify-around">
       <div className="mb-32">
         <h1 className="text-4xl text-center mb-4">Register</h1>
-        <form className="max-w-md mx-auto" onSubmit={regsiterUser}>
+        <form className="max-w-md mx-auto" onSubmit={registerUser}>
           <input
             type="text"
             placeholder="Snir Kaufman"
