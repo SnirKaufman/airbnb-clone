@@ -1,51 +1,73 @@
-// const User = require("../models/User");
-// const bcrypt = require("bcrypt");
-// const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
-// const bcryptSalt = bcrypt.genSaltSync(10);
-// const jwtSecret = "fdsadasda45dsadsa32dsa5das";
+const handleErrors = (err) => {
+  console.log(err.message, err.code);
+  let errors = {
+    name: "",
+    email: "",
+    password: "",
+  };
+  //duplicate error code
+  if (err.code === 11000) {
+    errors.email = "Already have an account";
+  }
+  //validation errors
+  if (err.message.includes("user validation failed")) {
+    Object.values(err.errors).forEach(({ properties }) => {
+      errors[properties.path] = properties.message;
+    });
+  }
 
-// const register = async (req, res) => {
-//   const { name, email, password } = req.body;
-//   try {
-//     const user = await User.create({
-//       name,
-//       email,
-//       password: bcrypt.hashSync(password, bcryptSalt),
-//     });
-//     res.json(user);
-//   } catch (error) {
-//     res.status(422).json(error);
-//   }
-// };
+  return errors;
+};
+const maxAge = 3 * 24 * 60 * 60;
 
-// const login = async (req, res) => {
-//   const { email, password } = req.body;
-//   const user = await User.findOne({ email });
-//   if (user) {
-//     const passOk = bcrypt.compareSync(password, user.password);
-//     if (passOk) {
-//       jwt.sign(
-//         {
-//           email: user.email,
-//           id: user._id,
-//         },
-//         jwtSecret,
-//         {},
-//         (err, token) => {
-//           if (err) throw err;
-//           res.cookie("token", token).json(user);
-//         }
-//       );
-//     } else {
-//       res.status(422).json("pass not ok");
-//     }
-//   } else {
-//     res.status(400).json("not found");
-//   }
-// };
+const createToken = (id) => {
+  return jwt.sign({ id }, "mecki secret", {
+    expiresIn: maxAge,
+  });
+};
 
-// module.exports = {
-//   register,
-//   login,
-// };
+const createNewUser = async (req, res) => {
+  const { name, email, password } = req.body;
+
+  try {
+    const user = await User.create({ name, email, password });
+    const token = createToken(user._id);
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      maxAge: maxAge * 1000,
+    });
+    res.status(201).json({ user: user._id });
+  } catch (err) {
+    const errors = handleErrors(err);
+    res.status(400).json({ errors });
+  }
+};
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.login(email, password);
+    const token = createToken(user._id);
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      maxAge: maxAge * 1000,
+    });
+    res.status(200).json({ user: user._id });
+  } catch (error) {
+    res.status(400).json({});
+  }
+};
+
+const logout = async (req, res) => {
+  res.cookie("jwt", "", { maxAge: 1 });
+  res.redirect("/");
+};
+
+module.exports = {
+  createNewUser,
+  login,
+  logout,
+};

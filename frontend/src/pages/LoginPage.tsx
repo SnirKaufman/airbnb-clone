@@ -15,11 +15,9 @@ function LoginPage() {
     try {
       const { data } = await axios.post("/login", { email, password });
       setUser(data);
-      alert("Login Success");
       navigate("/");
     } catch (error) {
       console.log(error);
-      alert("Login failed");
     }
   }
   return (
